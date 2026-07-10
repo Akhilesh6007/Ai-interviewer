@@ -50,9 +50,18 @@ function RoleProtectedRoute({ children, allowedRole }) {
 
   useEffect(() => {
     const checkRole = async () => {
+      const storedRole = localStorage.getItem("user_role");
+
+      if (storedRole === allowedRole) {
+        setStatus("allowed");
+        return;
+      }
+
       try {
         const response = await api.get("/users/me");
         const role = response.data.role;
+
+        localStorage.setItem("user_role", role);
 
         if (role === allowedRole) {
           setStatus("allowed");
@@ -60,8 +69,13 @@ function RoleProtectedRoute({ children, allowedRole }) {
           window.location.href = "/dashboard";
         }
       } catch (err) {
-        console.log("Role guard error:", err.response?.data);
-        window.location.href = "/login";
+        console.log("Backend not available, checking local role only.");
+
+        if (storedRole === allowedRole) {
+          setStatus("allowed");
+        } else {
+          window.location.href = "/login";
+        }
       }
     };
 

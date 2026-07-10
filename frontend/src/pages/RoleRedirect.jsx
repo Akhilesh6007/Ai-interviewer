@@ -4,47 +4,61 @@ import api from "../services/api";
 function RoleRedirect() {
   const [message, setMessage] = useState("Checking your login role...");
 
-  const redirectByRole = async () => {
-    try {
-      const pendingRole = localStorage.getItem("pending_login_role");
-
-      let role = "";
-
-      if (
-        pendingRole === "student" ||
-        pendingRole === "company" ||
-        pendingRole === "recruiter"
-      ) {
-        setMessage(`Setting your role as ${pendingRole}...`);
-
-        const response = await api.put("/users/role", {
-          role: pendingRole,
-        });
-
-        role = response.data.role;
-        localStorage.removeItem("pending_login_role");
-      } else {
-        const response = await api.get("/users/me");
-        role = response.data.role;
-      }
-
-      if (role === "student") {
-        window.location.href = "/student-dashboard";
-      } else if (role === "company") {
-        window.location.href = "/company-dashboard";
-      } else if (role === "recruiter") {
-        window.location.href = "/recruiter";
-      } else {
-        window.location.href = "/login";
-      }
-    } catch (err) {
-      console.log("Role redirect error:", err.response?.data);
-      setMessage("Unable to detect role. Please login again.");
-
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1200);
+  const goByRole = (role) => {
+    if (role === "student") {
+      window.location.href = "/student-dashboard";
+    } else if (role === "company") {
+      window.location.href = "/company-dashboard";
+    } else if (role === "recruiter") {
+      window.location.href = "/recruiter";
+    } else {
+      window.location.href = "/login";
     }
+  };
+
+  const redirectByRole = async () => {
+    const pendingRole = localStorage.getItem("pending_login_role");
+    const storedRole = localStorage.getItem("user_role");
+
+    if (
+      pendingRole === "student" ||
+      pendingRole === "company" ||
+      pendingRole === "recruiter"
+    ) {
+      localStorage.setItem("user_role", pendingRole);
+      localStorage.removeItem("pending_login_role");
+
+      try {
+        await api.put("/users/role", { role: pendingRole });
+      } catch (err) {
+        console.log("Backend not available online, using local role.");
+      }
+
+      goByRole(pendingRole);
+      return;
+    }
+
+    try {
+      const response = await api.get("/users/me");
+      const role = response.data.role;
+
+      localStorage.setItem("user_role", role);
+      goByRole(role);
+      return;
+    } catch (err) {
+      console.log("Backend role fetch failed, using local role.");
+    }
+
+    if (storedRole) {
+      goByRole(storedRole);
+      return;
+    }
+
+    setMessage("Unable to detect role. Please login again.");
+
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1200);
   };
 
   useEffect(() => {

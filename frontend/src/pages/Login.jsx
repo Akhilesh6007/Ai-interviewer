@@ -7,9 +7,10 @@ function Login() {
   );
 
   const chooseRole = (role) => {
-    localStorage.setItem("pending_login_role", role);
-    setSelectedRole(role);
-  };
+  localStorage.setItem("pending_login_role", role);
+  localStorage.setItem("user_role", role);
+  setSelectedRole(role);
+};
 
   const roles = [
     {
