@@ -86,4 +86,8 @@ FastAPI Backend
         |
 SQLite Database
         |
+<<<<<<< HEAD
 Gemini AI + Clerk Auth + Proctoring Logic
+=======
+Gemini AI + Clerk Auth + Proctoring Logic
+>>>>>>> 44903911a4dd23b5c87c5d3d25f9acac0a86d993
