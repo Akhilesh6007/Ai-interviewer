@@ -1,189 +1,261 @@
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { useAuth } from "@clerk/clerk-react";
 
 function Home() {
-    const navigate = useNavigate();
-    const { isSignedIn } = useAuth();
-  
+  const navigate = useNavigate();
 
   return (
-    <div className="landing-page">
+    <div className="home-pro-page">
       <Navbar />
-      
 
-      <section className="landing-hero">
-        <div className="landing-hero-inner">
-          <div>
-            <span className="landing-badge">
-              AI Proctored Interview + Coding Assessment Platform
-            </span>
-
-            <h1>
-              Practice interviews, detect cheating, and improve coding rank.
-            </h1>
-
-            <p>
-              A complete AI-powered placement preparation platform with mock
-              interviews, live proctoring, AI feedback, LeetCode performance
-              analysis, coding contests, and leaderboard tracking.
-            </p>
-
-            <div className="landing-actions">
-              <button
-                className="btn-primary"
-                onClick={() => navigate(isSignedIn ? "/dashboard" : "/register")}
-              >
-                Get Started
-              </button>
-
-              <button
-                className="btn-dark"
-                onClick={() => navigate(isSignedIn ? "/leetcode" : "/login")}
-              >
-                Try LeetCode Contest
-              </button>
-            </div>
+      <section className="home-hero-pro">
+        <div className="home-hero-content">
+          <div className="hero-chip">
+            AI Proctored Interview + Coding Assessment Platform
           </div>
 
-          <div className="landing-preview-card">
-            <div className="preview-top">
-              <div>
-                <h3 style={{ margin: 0 }}>AI Interview Report</h3>
-                <p style={{ color: "#64748b", margin: "6px 0 0" }}>
-                  Candidate performance summary
-                </p>
-              </div>
+          <h1>
+            AI-powered hiring and interview preparation platform for modern
+            recruitment.
+          </h1>
 
-              <span className="preview-pill">Live</span>
+          <p>
+            Practice interviews, detect suspicious activity, run company hiring
+            drives, evaluate coding readiness, and rank candidates using AI.
+          </p>
+
+          <div className="hero-actions">
+            <button onClick={() => navigate("/login")} className="hero-primary">
+              Get Started
+            </button>
+
+            <button onClick={() => navigate("/login")} className="hero-secondary">
+              Explore Platform
+            </button>
+          </div>
+
+          <div className="hero-trust-row">
+            <span>✓ AI Interview Evaluation</span>
+            <span>✓ Proctoring Signals</span>
+            <span>✓ Recruiter Ranking</span>
+          </div>
+        </div>
+
+        <div className="home-hero-visual">
+          <div className="report-card-pro">
+            <div className="report-top">
+              <div>
+                <h3>AI Interview Report</h3>
+                <p>Candidate performance summary</p>
+              </div>
+              <span>Live</span>
             </div>
 
-            <div className="preview-score">
-              <div className="preview-score-inner">
-                <b>75%</b>
+            <div className="score-ring-pro">
+              <div>
+                <b>82%</b>
                 <span>Selection</span>
               </div>
             </div>
 
-            <div className="preview-list">
-              <div className="preview-row">
+            <div className="report-metrics">
+              <div>
                 <span>AI Answer Score</span>
-                <b>8.2/10</b>
+                <b>8.5/10</b>
               </div>
-
-              <div className="preview-row">
+              <div>
                 <span>Proctor Status</span>
-                <b style={{ color: "#16a34a" }}>Clean</b>
+                <b className="green-text">Clean</b>
               </div>
-
-              <div className="preview-row">
+              <div>
                 <span>Coding Rank</span>
-                <b>#1</b>
+                <b>#3</b>
               </div>
             </div>
+          </div>
+
+          <div className="floating-card floating-one">
+            <b>AI Decision</b>
+            <span>Shortlisted</span>
+          </div>
+
+          <div className="floating-card floating-two">
+            <b>Drive Attempts</b>
+            <span>125+</span>
           </div>
         </div>
       </section>
 
-      <section className="landing-section">
-        <div className="section-title">
-          <h2>Everything needed for placement preparation</h2>
+      <section className="platform-section">
+        <div className="section-heading">
+          <span>Platform Modules</span>
+          <h2>Built for students, companies, and recruiters</h2>
           <p>
-            This platform combines interview preparation, proctoring, coding
-            practice, and analytics into one professional assessment system.
+            A complete assessment ecosystem with interview practice, mass hiring
+            drives, candidate tracking, and AI decision support.
           </p>
         </div>
 
-        <div className="feature-grid">
-          <div className="feature-card">
-            <div className="feature-icon">🤖</div>
+        <div className="role-showcase-grid">
+          <div className="role-showcase-card">
+            <div className="role-showcase-icon">🎓</div>
+            <h3>Student Workspace</h3>
+            <p>
+              Practice AI interviews, attempt coding challenges, and analyze
+              preparation reports.
+            </p>
+            <ul>
+              <li>AI mock interview</li>
+              <li>Personal score report</li>
+              <li>LeetCode-style practice</li>
+            </ul>
+          </div>
+
+          <div className="role-showcase-card highlighted">
+            <div className="role-showcase-icon">🏢</div>
+            <h3>Company Hiring Drives</h3>
+            <p>
+              Create assessment drives, generate invite links, and process
+              candidates at scale.
+            </p>
+            <ul>
+              <li>Mass recruitment drives</li>
+              <li>Shareable assessment links</li>
+              <li>Candidate attempt tracking</li>
+            </ul>
+          </div>
+
+          <div className="role-showcase-card">
+            <div className="role-showcase-icon">🧑‍💼</div>
+            <h3>Recruiter Dashboard</h3>
+            <p>
+              Compare candidates using interview score, coding score, and
+              integrity signals.
+            </p>
+            <ul>
+              <li>AI candidate ranking</li>
+              <li>Shortlist decisions</li>
+              <li>Detailed reports</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="stats-section-pro">
+        <div>
+          <h2>Why this project stands out</h2>
+          <p>
+            Unlike a basic interview app, this platform simulates a real hiring
+            workflow with authentication, role-based access, AI evaluation, and
+            proctored assessment analytics.
+          </p>
+        </div>
+
+        <div className="stats-grid-pro">
+          <div>
+            <b>3</b>
+            <span>User Roles</span>
+          </div>
+          <div>
+            <b>AI</b>
+            <span>Evaluation</span>
+          </div>
+          <div>
+            <b>360°</b>
+            <span>Candidate View</span>
+          </div>
+          <div>
+            <b>Live</b>
+            <span>Proctoring</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="features-pro-section">
+        <div className="section-heading">
+          <span>Core Features</span>
+          <h2>Everything needed for placement and hiring assessments</h2>
+        </div>
+
+        <div className="features-pro-grid">
+          <div className="feature-pro-card">
+            <span>🤖</span>
             <h3>AI Mock Interview</h3>
             <p>
-              Generate role-based interview questions and evaluate answers using
-              AI scoring and feedback.
+              Generate role-based questions and evaluate answers using AI
+              scoring and feedback.
             </p>
           </div>
 
-          <div className="feature-card">
-            <div className="feature-icon">🎥</div>
+          <div className="feature-pro-card">
+            <span>🎥</span>
             <h3>Live Proctoring</h3>
             <p>
-              Detect no-face, multiple-face, tab switch, fullscreen exit, and
-              suspicious activity during interviews.
+              Track tab switch, fullscreen exit, and suspicious assessment
+              activity.
             </p>
           </div>
 
-          <div className="feature-card">
-            <div className="feature-icon">💻</div>
-            <h3>LeetCode Contest</h3>
+          <div className="feature-pro-card">
+            <span>💻</span>
+            <h3>Coding Assessment</h3>
             <p>
-              Analyze LeetCode performance and generate personalized
-              LeetCode-style coding contests.
+              Practice LeetCode-style coding questions and track submission
+              performance.
             </p>
           </div>
 
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
+          <div className="feature-pro-card">
+            <span>📊</span>
             <h3>Smart Reports</h3>
             <p>
-              Show selection percentage, final score, proctor penalty, answer
-              quality, and coding leaderboard.
+              Generate final score, selection probability, integrity risk, and
+              improvement roadmap.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="workflow-section">
-        <div className="landing-section">
-          <div className="section-title">
-            <h2>How it works</h2>
-            <p>
-              Simple workflow for candidates preparing for technical interviews.
-            </p>
+      <section className="workflow-section-pro">
+        <div className="section-heading">
+          <span>Workflow</span>
+          <h2>How the platform works</h2>
+        </div>
+
+        <div className="workflow-grid-pro">
+          <div>
+            <b>01</b>
+            <h3>Choose Role</h3>
+            <p>Login as Student, Company, or Recruiter.</p>
           </div>
 
-          <div className="workflow-grid">
-            <div className="workflow-step">
-              <div className="step-number">1</div>
-              <h3>Create Account</h3>
-              <p>Register and access your personal preparation dashboard.</p>
-            </div>
+          <div>
+            <b>02</b>
+            <h3>Start Assessment</h3>
+            <p>Begin AI interview or company drive-based assessment.</p>
+          </div>
 
-            <div className="workflow-step">
-              <div className="step-number">2</div>
-              <h3>Start Interview</h3>
-              <p>Choose role, difficulty, number of questions, and begin.</p>
-            </div>
+          <div>
+            <b>03</b>
+            <h3>Evaluate Performance</h3>
+            <p>AI evaluates answers, coding performance, and proctoring logs.</p>
+          </div>
 
-            <div className="workflow-step">
-              <div className="step-number">3</div>
-              <h3>Attempt Coding Contest</h3>
-              <p>Connect LeetCode profile and solve generated questions.</p>
-            </div>
-
-            <div className="workflow-step">
-              <div className="step-number">4</div>
-              <h3>View Analytics</h3>
-              <p>Check report, selection chance, proctor logs, and ranking.</p>
-            </div>
+          <div>
+            <b>04</b>
+            <h3>Review Decision</h3>
+            <p>Recruiters view ranking, shortlist status, and detailed reports.</p>
           </div>
         </div>
       </section>
 
-      <section className="landing-section">
-        <div className="cta-box">
-          <h2>Ready to improve your interview performance?</h2>
-          <p>
-            Start practicing with AI interviews and personalized coding contests.
-          </p>
-
-          <button
-            className="btn-primary"
-            onClick={() => navigate(isSignedIn ? "/dashboard" : "/register")}
-          >
-            Start Now
-          </button>
-        </div>
+      <section className="home-final-cta">
+        <h2>Ready to transform interview preparation and hiring?</h2>
+        <p>
+          Start practicing, create hiring drives, or review candidates with
+          AI-powered assessment intelligence.
+        </p>
+        <button onClick={() => navigate("/login")}>Start Now</button>
       </section>
     </div>
   );
