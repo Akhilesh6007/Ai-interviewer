@@ -130,9 +130,9 @@ function VideoFeed({ sessionId }) {
     detections.forEach((detection) => {
       const box = detection.boundingBox;
 
-      ctx.strokeStyle = detections.length > 1 ? "red" : "lime";
-      ctx.lineWidth = 4;
-      ctx.strokeRect(box.originX, box.originY, box.width, box.height);
+      // ctx.strokeStyle = detections.length > 1 ? "red" : "lime";
+      // ctx.lineWidth = 4;
+      // ctx.strokeRect(box.originX, box.originY, box.width, box.height);
     });
   };
 

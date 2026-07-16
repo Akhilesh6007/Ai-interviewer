@@ -3267,3 +3267,13 @@ textarea {
     grid-template-columns: 1fr !important;
   }
 }
+
+canvas {
+  outline: none !important;
+}
+
+.video-feed canvas,
+.proctor-card canvas,
+.face-canvas {
+  display: none !important;
+}
