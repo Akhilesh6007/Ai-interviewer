@@ -1,7 +1,7 @@
 import os
 import random
 import time
-import google.generativeai as genai
+from google import genai
 
 
 def fallback_question(role: str, difficulty: str):
@@ -22,6 +22,7 @@ def fallback_question(role: str, difficulty: str):
         "question_text": random.choice(questions),
         "topic": role,
         "difficulty": difficulty,
+        "source": "fallback",
     }
 
 
@@ -33,12 +34,10 @@ def generate_ai_question(role: str, difficulty: str):
             print("GEMINI_API_KEY missing. Using fallback question.")
             return fallback_question(role, difficulty)
 
-        genai.configure(api_key=api_key)
-
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        client = genai.Client(api_key=api_key)
 
         prompt = f"""
-Generate ONE fresh interview question.
+Generate ONE fresh interview question for an AI-proctored interview.
 
 Role: {role}
 Difficulty: {difficulty}
@@ -46,13 +45,17 @@ Unique seed: {time.time()}
 
 Rules:
 - Ask only one question.
-- Do not repeat generic questions.
+- Make it role-specific and practical.
+- Do not repeat generic self-introduction questions.
 - Do not include numbering.
 - Do not include explanation.
-- Keep it professional and role-specific.
+- Return only the question text.
 """
 
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
 
         question_text = response.text.strip() if response and response.text else ""
 
@@ -64,6 +67,7 @@ Rules:
             "question_text": question_text,
             "topic": role,
             "difficulty": difficulty,
+            "source": "gemini",
         }
 
     except Exception as e:

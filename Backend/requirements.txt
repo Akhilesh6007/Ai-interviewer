@@ -11,3 +11,4 @@ google-generativeai
 email-validator
 requests
 PyJWT
+google-genai
