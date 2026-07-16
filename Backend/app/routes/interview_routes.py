@@ -30,10 +30,28 @@ from app.models.interview_model import InterviewSession
 from app.models.question_model import Question
 
 
+
+
 router = APIRouter(
     prefix="/interview",
     tags=["Interview"]
 )
+
+def get_fallback_question(role: str, question_number: int):
+    questions = [
+        f"Tell me about your experience and core skills for the {role} role.",
+        f"What are the most important technical skills required for a {role}?",
+        f"Explain one project where you used {role}-related skills.",
+        f"What challenges have you faced while preparing for the {role} role?",
+        f"How would you solve a real-world problem as a {role}?",
+        f"What tools or technologies are important for a {role}?",
+        f"Explain a difficult concept related to {role} in simple terms.",
+        f"How do you keep improving your skills for the {role} position?",
+        f"What is your strongest skill for the {role} role and why?",
+        f"What is your weakest area for the {role} role and how are you improving it?",
+    ]
+
+    return questions[question_number % len(questions)]
 
 
 def get_session_by_id(db: Session, session_id: int):
@@ -133,6 +151,17 @@ def generate_question_for_interview(
         else:
             question_text = str(ai_question)
             topic = session.role
+
+        existing_questions = db.query(Question).filter(
+            Question.session_id == session_id).all()
+
+        existing_texts = [q.question_text for q in existing_questions]
+
+        if question_text in existing_texts or question_text.strip() == "":
+            question_text = get_fallback_question(
+                role=session.role,
+                question_number=len(existing_questions)
+        )    
 
     except Exception as e:
         print("AI QUESTION GENERATION ERROR:", str(e))

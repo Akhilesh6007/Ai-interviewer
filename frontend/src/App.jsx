@@ -190,7 +190,7 @@ function App() {
         path="/interview"
         element={
           <ProtectedRoute>
-            <Interview />
+            <InterviewSetup />
           </ProtectedRoute>
         }
       />

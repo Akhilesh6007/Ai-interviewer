@@ -3260,3 +3260,10 @@ textarea {
     display: none;
   }
 }
+
+
+@media (max-width: 950px) {
+  .interview-room-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
