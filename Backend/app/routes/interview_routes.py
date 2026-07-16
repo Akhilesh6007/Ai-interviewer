@@ -288,7 +288,7 @@ def list_proctor_events(
     )
 
 
-@router.get("/{session_id}/report", response_model=ReportResponse)
+@router.get("/{session_id}/report")
 def get_report(
     session_id: int,
     db: Session = Depends(get_db),
@@ -303,15 +303,28 @@ def get_report(
     )
 
     if session is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Interview session not found"
-        )
+        raise HTTPException(status_code=404, detail="Interview session not found")
 
-    return generate_report(
-        db=db,
-        session_id=session_id
-    )
+    try:
+        return generate_report(
+            db=db,
+            session_id=session_id
+        )
+    except Exception as e:
+        print("REPORT GENERATION ERROR:", str(e))
+
+        return {
+            "session_id": session_id,
+            "average_score": 0,
+            "proctor_penalty": 0,
+            "final_score": 0,
+            "selection_percentage": 0,
+            "selection_status": "Not Recommended",
+            "total_questions": 0,
+            "answered_questions": 0,
+            "proctor_events_count": 0,
+            "summary": "Report fallback generated because full report generation failed."
+        }
 
 @router.post("/{session_id}/answer")
 def submit_answer(
@@ -331,23 +344,15 @@ def submit_answer(
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
 
-    question_id = getattr(answer_data, "question_id", None)
+    question = db.query(Question).filter(
+        Question.id == answer_data.question_id,
+        Question.session_id == session_id
+    ).first()
 
-    question = None
-
-    if question_id:
-        question = db.query(Question).filter(
-            Question.id == question_id,
-            Question.session_id == session_id
-        ).first()
-
-    # fallback: agar frontend ka question_id mismatch ho to latest question use karo
     if not question:
         question = db.query(Question).filter(
             Question.session_id == session_id
-        ).order_by(
-            Question.id.desc()
-        ).first()
+        ).order_by(Question.id.desc()).first()
 
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -370,7 +375,7 @@ def submit_answer(
             session_id=session_id,
             question_id=question.id,
             answer_text=answer_data.answer_text,
-            ai_score=evaluation.get("score", 6),
+            ai_score=int(evaluation.get("score", 6)),
             ai_feedback=evaluation.get("feedback", "Answer evaluated.")
         )
 
@@ -381,6 +386,7 @@ def submit_answer(
             "answer_text": answer.answer_text,
             "ai_score": answer.ai_score,
             "ai_feedback": answer.ai_feedback,
+            "status": "Evaluated"
         }
 
     except Exception as e:
@@ -406,9 +412,6 @@ def end_interview(
     )
 
     if session is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Interview session not found"
-        )
+        raise HTTPException(status_code=404, detail="Interview session not found")
 
     return session       

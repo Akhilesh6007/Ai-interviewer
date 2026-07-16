@@ -1,79 +1,63 @@
 import os
 import random
+import time
 import google.generativeai as genai
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
 
 
 def fallback_question(role: str, difficulty: str):
     questions = [
-        {
-            "question_text": f"Explain one project where you used skills related to the {role} role.",
-            "topic": role,
-            "difficulty": difficulty,
-        },
-        {
-            "question_text": f"What are the most important technical skills required for a {role}?",
-            "topic": role,
-            "difficulty": difficulty,
-        },
-        {
-            "question_text": f"Describe a challenging problem you solved while preparing for the {role} position.",
-            "topic": role,
-            "difficulty": difficulty,
-        },
-        {
-            "question_text": f"How would you approach debugging a production issue as a {role}?",
-            "topic": role,
-            "difficulty": difficulty,
-        },
-        {
-            "question_text": f"What tools, frameworks, or technologies are important for a {role}, and why?",
-            "topic": role,
-            "difficulty": difficulty,
-        },
-        {
-            "question_text": f"Explain a difficult concept related to {role} in simple terms.",
-            "topic": role,
-            "difficulty": difficulty,
-        },
-        {
-            "question_text": f"How do you improve your technical skills for the {role} role?",
-            "topic": role,
-            "difficulty": difficulty,
-        },
+        f"What are the most important technical skills required for a {role}?",
+        f"Explain one project where you used {role}-related skills.",
+        f"How would you debug a production issue as a {role}?",
+        f"What tools or frameworks are important for a {role}, and why?",
+        f"Describe a challenging problem you solved while preparing for the {role} role.",
+        f"Explain a difficult concept related to {role} in simple terms.",
+        f"How do you keep improving your skills for the {role} position?",
+        f"What is your strongest technical skill for the {role} role?",
+        f"What mistakes should a beginner {role} avoid?",
+        f"How would you handle tight deadlines in a {role} project?",
     ]
 
-    return random.choice(questions)
+    return {
+        "question_text": random.choice(questions),
+        "topic": role,
+        "difficulty": difficulty,
+    }
 
 
 def generate_ai_question(role: str, difficulty: str):
     try:
-        if not GEMINI_API_KEY:
+        api_key = os.getenv("GEMINI_API_KEY")
+
+        if not api_key:
             print("GEMINI_API_KEY missing. Using fallback question.")
             return fallback_question(role, difficulty)
 
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        genai.configure(api_key=api_key)
+
+        model = genai.GenerativeModel("gemini-2.5-flash")
 
         prompt = f"""
-        Generate one professional interview question.
+Generate ONE fresh interview question.
 
-        Role: {role}
-        Difficulty: {difficulty}
+Role: {role}
+Difficulty: {difficulty}
+Unique seed: {time.time()}
 
-        Return only the question text.
-        Do not include numbering.
-        Do not include explanation.
-        """
+Rules:
+- Ask only one question.
+- Do not repeat generic questions.
+- Do not include numbering.
+- Do not include explanation.
+- Keep it professional and role-specific.
+"""
 
         response = model.generate_content(prompt)
 
-        question_text = response.text.strip()
+        question_text = response.text.strip() if response and response.text else ""
 
         if not question_text:
+            print("Gemini returned empty question. Using fallback.")
             return fallback_question(role, difficulty)
 
         return {
