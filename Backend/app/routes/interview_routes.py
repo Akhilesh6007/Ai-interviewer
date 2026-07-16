@@ -94,9 +94,9 @@ def get_ai_hiring_analysis(
     db: Session = Depends(get_db),
     clerk_user: dict = Depends(verify_clerk_token)
 ):
-    user = get_or_create_clerk_user(db, clerk_user)
-
-    session = get_session_by_id(db, session_id)
+    session = db.query(InterviewSession).filter(
+        InterviewSession.id == session_id
+    ).first()
 
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
@@ -104,7 +104,7 @@ def get_ai_hiring_analysis(
     return generate_ai_hiring_analysis(
         db=db,
         session_id=session_id,
-        user_id=user.id
+        user_id=session.user_id
     )
 
 
@@ -271,13 +271,15 @@ def save_proctor_event(
     return event
 
 
-@router.get("/{session_id}/proctor-events", response_model=list[ProctorEventResponse])
+@router.get("/{session_id}/proctor-events")
 def list_proctor_events(
     session_id: int,
     db: Session = Depends(get_db),
     clerk_user: dict = Depends(verify_clerk_token)
 ):
-    session = get_session_by_id(db, session_id)
+    session = db.query(InterviewSession).filter(
+        InterviewSession.id == session_id
+    ).first()
 
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
@@ -294,15 +296,11 @@ def get_report(
     db: Session = Depends(get_db),
     clerk_user: dict = Depends(verify_clerk_token)
 ):
-    user = get_or_create_clerk_user(db, clerk_user)
+    session = db.query(InterviewSession).filter(
+        InterviewSession.id == session_id
+    ).first()
 
-    session = get_interview_for_user(
-        db=db,
-        session_id=session_id,
-        user_id=user.id
-    )
-
-    if session is None:
+    if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
 
     try:
@@ -333,13 +331,9 @@ def submit_answer(
     db: Session = Depends(get_db),
     clerk_user: dict = Depends(verify_clerk_token)
 ):
-    user = get_or_create_clerk_user(db, clerk_user)
-
-    session = get_interview_for_user(
-        db=db,
-        session_id=session_id,
-        user_id=user.id
-    )
+    session = db.query(InterviewSession).filter(
+        InterviewSession.id == session_id
+    ).first()
 
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
@@ -397,21 +391,21 @@ def submit_answer(
             detail=f"Answer save failed: {str(e)}"
         )
 
-@router.post("/{session_id}/end", response_model=InterviewResponse)
+@router.post("/{session_id}/end")
 def end_interview(
     session_id: int,
     db: Session = Depends(get_db),
     clerk_user: dict = Depends(verify_clerk_token)
 ):
-    user = get_or_create_clerk_user(db, clerk_user)
+    session = db.query(InterviewSession).filter(
+        InterviewSession.id == session_id
+    ).first()
 
-    session = end_interview_by_id(
-        db=db,
-        session_id=session_id,
-        user_id=user.id
-    )
-
-    if session is None:
+    if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
 
-    return session       
+    return end_interview_by_id(
+        db=db,
+        session_id=session_id,
+        user_id=session.user_id
+    )      
