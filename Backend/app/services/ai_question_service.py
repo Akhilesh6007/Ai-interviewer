@@ -1,7 +1,7 @@
 import os
 import random
 import time
-from google import genai
+from groq import Groq
 
 
 def fallback_question(role: str, difficulty: str):
@@ -13,9 +13,6 @@ def fallback_question(role: str, difficulty: str):
         f"Describe a challenging problem you solved while preparing for the {role} role.",
         f"Explain a difficult concept related to {role} in simple terms.",
         f"How do you keep improving your skills for the {role} position?",
-        f"What is your strongest technical skill for the {role} role?",
-        f"What mistakes should a beginner {role} avoid?",
-        f"How would you handle tight deadlines in a {role} project?",
     ]
 
     return {
@@ -28,16 +25,16 @@ def fallback_question(role: str, difficulty: str):
 
 def generate_ai_question(role: str, difficulty: str):
     try:
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GROQ_API_KEY")
 
         if not api_key:
-            print("GEMINI_API_KEY missing. Using fallback question.")
+            print("GROQ_API_KEY missing. Using fallback question.")
             return fallback_question(role, difficulty)
 
-        client = genai.Client(api_key=api_key)
+        client = Groq(api_key=api_key)
 
         prompt = f"""
-Generate ONE fresh interview question for an AI-proctored interview.
+Generate ONE fresh professional interview question.
 
 Role: {role}
 Difficulty: {difficulty}
@@ -45,31 +42,41 @@ Unique seed: {time.time()}
 
 Rules:
 - Ask only one question.
-- Make it role-specific and practical.
-- Do not repeat generic self-introduction questions.
+- Make it practical and role-specific.
+- Avoid generic self-introduction questions.
 - Do not include numbering.
 - Do not include explanation.
 - Return only the question text.
 """
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You generate professional technical interview questions.",
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            temperature=0.9,
+            max_tokens=120,
         )
 
-        question_text = response.text.strip() if response and response.text else ""
+        question_text = response.choices[0].message.content.strip()
 
         if not question_text:
-            print("Gemini returned empty question. Using fallback.")
             return fallback_question(role, difficulty)
 
         return {
             "question_text": question_text,
             "topic": role,
             "difficulty": difficulty,
-            "source": "gemini",
+            "source": "groq",
         }
 
     except Exception as e:
-        print("AI QUESTION GENERATION ERROR:", str(e))
+        print("GROQ QUESTION GENERATION ERROR:", str(e))
         return fallback_question(role, difficulty)

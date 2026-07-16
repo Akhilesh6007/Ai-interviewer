@@ -12,3 +12,5 @@ email-validator
 requests
 PyJWT
 google-genai
+
+groq
