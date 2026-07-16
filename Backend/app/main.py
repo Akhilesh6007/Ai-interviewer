@@ -26,7 +26,8 @@ from app.routes.admin_routes import router as admin_router
 from app.routes.user_routes import router as user_router
 from app.routes.hiring_drive_routes import router as hiring_drive_router
 from app.routes.demo_routes import router as demo_router
-
+import os
+from google import genai
 
 app = FastAPI(title="AI Proctored Interview API")
 
@@ -61,3 +62,37 @@ app.include_router(demo_router)
 @app.get("/")
 def home():
     return {"message": "AI Proctored Interview Backend Running"}
+
+@app.get("/debug/gemini")
+def debug_gemini():
+    api_key = os.getenv("GEMINI_API_KEY")
+
+    if not api_key:
+        return {
+            "status": "failed",
+            "reason": "GEMINI_API_KEY missing",
+            "key_found": False
+        }
+
+    try:
+        client = genai.Client(api_key=api_key)
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents="Generate one short interview question for a Frontend Developer. Return only the question."
+        )
+
+        return {
+            "status": "success",
+            "key_found": True,
+            "key_start": api_key[:6],
+            "response": response.text
+        }
+
+    except Exception as e:
+        return {
+            "status": "failed",
+            "key_found": True,
+            "key_start": api_key[:6],
+            "error": str(e)
+        }
