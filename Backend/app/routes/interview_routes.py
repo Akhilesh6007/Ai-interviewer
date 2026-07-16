@@ -114,9 +114,15 @@ def get_interview(
     db: Session = Depends(get_db),
     clerk_user: dict = Depends(verify_clerk_token)
 ):
-    session = get_session_by_id(db, session_id)
+    user = get_or_create_clerk_user(db, clerk_user)
 
-    if not session:
+    session = get_interview_for_user(
+        db=db,
+        session_id=session_id,
+        user_id=user.id
+    )
+
+    if session is None:
         raise HTTPException(status_code=404, detail="Interview session not found")
 
     return session
@@ -288,10 +294,19 @@ def get_report(
     db: Session = Depends(get_db),
     clerk_user: dict = Depends(verify_clerk_token)
 ):
-    session = get_session_by_id(db, session_id)
+    user = get_or_create_clerk_user(db, clerk_user)
 
-    if not session:
-        raise HTTPException(status_code=404, detail="Interview session not found")
+    session = get_interview_for_user(
+        db=db,
+        session_id=session_id,
+        user_id=user.id
+    )
+
+    if session is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Interview session not found"
+        )
 
     return generate_report(
         db=db,
@@ -305,9 +320,13 @@ def submit_answer(
     db: Session = Depends(get_db),
     clerk_user: dict = Depends(verify_clerk_token)
 ):
-    session = db.query(InterviewSession).filter(
-        InterviewSession.id == session_id
-    ).first()
+    user = get_or_create_clerk_user(db, clerk_user)
+
+    session = get_interview_for_user(
+        db=db,
+        session_id=session_id,
+        user_id=user.id
+    )
 
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
@@ -370,4 +389,26 @@ def submit_answer(
         raise HTTPException(
             status_code=500,
             detail=f"Answer save failed: {str(e)}"
-        )    
+        )
+
+@router.post("/{session_id}/end", response_model=InterviewResponse)
+def end_interview(
+    session_id: int,
+    db: Session = Depends(get_db),
+    clerk_user: dict = Depends(verify_clerk_token)
+):
+    user = get_or_create_clerk_user(db, clerk_user)
+
+    session = end_interview_by_id(
+        db=db,
+        session_id=session_id,
+        user_id=user.id
+    )
+
+    if session is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Interview session not found"
+        )
+
+    return session       
