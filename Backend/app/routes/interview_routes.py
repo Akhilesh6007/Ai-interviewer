@@ -140,6 +140,17 @@ def generate_question_for_interview(
 
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
+    existing_question_count = db.query(Question).filter(
+        Question.session_id == session_id
+    ).count()
+
+    if existing_question_count >= session.total_questions:
+        raise HTTPException(
+            status_code=400,
+            detail="Question limit reached. Please end the interview."
+        )
+
+
 
     try:
         ai_question = generate_ai_question(
@@ -232,14 +243,12 @@ def generate_question_for_interview(
 
         return {
             "id": question.id,
-            "session_id": getattr(question, "session_id", session.id),
-            "question_text": getattr(
-                question,
-                "question_text",
-                getattr(question, "question", question_text)
-            ),
+            "session_id": question.session_id,
+            "question_text": question.question_text,
             "difficulty": getattr(question, "difficulty", session.difficulty),
-            "topic": getattr(question, "topic", topic),
+            "topic": getattr(question, "topic", session.role),
+            "question_type": ai_question.get("question_type", "text") if isinstance(ai_question, dict) else "text",
+            "options": ai_question.get("options") if isinstance(ai_question, dict) else None,
         }
 
     except Exception as e:
@@ -249,6 +258,8 @@ def generate_question_for_interview(
             status_code=500,
             detail=f"Question save failed: {str(e)}"
         )
+
+        
 
 @router.post("/{session_id}/proctor-event", response_model=ProctorEventResponse)
 def save_proctor_event(

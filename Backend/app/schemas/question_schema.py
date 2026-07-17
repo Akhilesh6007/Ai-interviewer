@@ -1,16 +1,15 @@
 from pydantic import BaseModel
-
-
-class QuestionCreate(BaseModel):
-    session_id: int
-    question_number: int
+from typing import Optional, List
 
 
 class QuestionResponse(BaseModel):
     id: int
     session_id: int
     question_text: str
-    question_number: int
+    topic: Optional[str] = None
+    difficulty: Optional[str] = None
+    question_type: Optional[str] = "text"
+    options: Optional[List[str]] = None
 
     class Config:
         from_attributes = True

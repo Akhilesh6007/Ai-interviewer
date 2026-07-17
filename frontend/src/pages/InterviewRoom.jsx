@@ -15,8 +15,17 @@ function InterviewRoom() {
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [questionCount, setQuestionCount] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(5);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState("");
+  const [mediaRecorder, setMediaRecorder] = useState(null);
 
   const generateQuestion = async () => {
+
+    if (questionCount >= totalQuestions) {
+  setError("Question limit reached. Please end the interview.");
+  return;
+}
     try {
       setLoading(true);
       setError("");
@@ -76,11 +85,67 @@ function InterviewRoom() {
     window.location.href = `/report/${sessionId}`;
   };
 
+  const speakQuestion = () => {
+  if (!question?.question_text) return;
+
+  const utterance = new SpeechSynthesisUtterance(question.question_text);
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+};
+
+const startRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+    const chunks = [];
+
+    recorder.ondataavailable = (e) => {
+      chunks.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+      stream.getTracks().forEach((track) => track.stop());
+    };
+
+    recorder.start();
+    setMediaRecorder(recorder);
+    setIsRecording(true);
+  } catch (err) {
+    console.log("Audio recording error:", err);
+    setError("Microphone permission required for audio recording.");
+  }
+};
+
+const stopRecording = () => {
+  if (mediaRecorder) {
+    mediaRecorder.stop();
+    setIsRecording(false);
+  }
+};
+
+
+  const loadSessionDetails = async () => {
+  try {
+    const response = await api.get(`/interview/${sessionId}`);
+    setTotalQuestions(response.data.total_questions || 5);
+  } catch (err) {
+    console.log("Session load error:", err.response?.data);
+  }
+};
+
   useEffect(() => {
-    if (sessionId) {
-      generateQuestion();
-    }
-  }, [sessionId]);
+  if (sessionId) {
+    loadSessionDetails();
+    generateQuestion();
+  }
+}, [sessionId]);
+
+
 
   return (
     <div className="leetcode-page">
@@ -189,20 +254,48 @@ function InterviewRoom() {
 
                   <br />
 
-                  <textarea
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value)}
-                    placeholder="Type your answer here..."
-                    rows="9"
-                    style={{
-                      width: "100%",
-                      padding: "16px",
-                      borderRadius: "14px",
-                      border: "1px solid #d1d5db",
-                      fontSize: "16px",
-                      resize: "vertical",
-                    }}
-                  />
+                  {question.question_type === "mcq" && question.options?.length > 0 ? (
+  <div style={{ marginTop: "18px", display: "grid", gap: "12px" }}>
+    {question.options.map((option, index) => (
+      <label
+        key={index}
+        style={{
+          padding: "14px",
+          border: "1px solid #d1d5db",
+          borderRadius: "12px",
+          cursor: "pointer",
+          fontWeight: "700",
+          background: answer === option ? "#eef2ff" : "#ffffff",
+        }}
+      >
+        <input
+          type="radio"
+          name="mcq-answer"
+          value={option}
+          checked={answer === option}
+          onChange={(e) => setAnswer(e.target.value)}
+          style={{ marginRight: "10px" }}
+        />
+        {option}
+      </label>
+    ))}
+  </div>
+) : (
+  <textarea
+    value={answer}
+    onChange={(e) => setAnswer(e.target.value)}
+    placeholder="Type your answer here..."
+    rows="9"
+    style={{
+      width: "100%",
+      padding: "16px",
+      borderRadius: "14px",
+      border: "1px solid #d1d5db",
+      fontSize: "16px",
+      resize: "vertical",
+    }}
+  />
+)}
 
                   <div
                     style={{
@@ -212,14 +305,37 @@ function InterviewRoom() {
                       flexWrap: "wrap",
                     }}
                   >
+                    <button className="btn-dark" type="button" onClick={speakQuestion}>
+                      Speak Question
+                    </button>
+
+                    {isRecording ? (
+                      <button type="button" className="btn-dark" onClick={stopRecording}>
+                        Stop Recording
+                      </button>
+                    ) : (
+                      <button type="button" className="btn-dark" onClick={startRecording}>
+                        Record Answer
+                      </button>
+                    )}
                     <button onClick={submitAnswer} disabled={submitLoading}>
                       {submitLoading ? "Evaluating..." : "Submit Answer"}
                     </button>
 
-                    <button className="btn-dark" onClick={generateQuestion}>
-                      Next Question
+                    <button
+                      className="btn-dark"
+                      onClick={generateQuestion}
+                      disabled={questionCount >= totalQuestions}
+                    >
+                      {questionCount >= totalQuestions ? "Limit Reached" : "Next Question"}
                     </button>
                   </div>
+                  {audioUrl && (
+                    <div style={{ marginTop: "16px" }}>
+                      <p style={{ fontWeight: "800" }}>Recorded Audio Preview</p>
+                      <audio controls src={audioUrl} />
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="empty-state">No question available.</div>
