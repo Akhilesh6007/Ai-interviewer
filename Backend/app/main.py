@@ -1,15 +1,12 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-import os
-import google.generativeai as genai
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config.database import Base, engine
 
-# Import models so SQLAlchemy creates tables
+# Import models
 from app.models import (
     user_model,
     interview_model,
@@ -64,39 +61,3 @@ app.include_router(demo_router)
 @app.get("/")
 def home():
     return {"message": "AI Proctored Interview Backend Running"}
-
-
-@app.get("/debug/gemini")
-def debug_gemini():
-    api_key = os.getenv("GEMINI_API_KEY")
-
-    if not api_key:
-        return {
-            "status": "failed",
-            "reason": "GEMINI_API_KEY missing",
-            "key_found": False
-        }
-
-    try:
-        genai.configure(api_key=api_key)
-
-        model = genai.GenerativeModel("gemini-1.5-flash")
-
-        response = model.generate_content(
-            "Generate one short interview question for a Frontend Developer. Return only the question."
-        )
-
-        return {
-            "status": "success",
-            "key_found": True,
-            "key_start": api_key[:6],
-            "response": response.text
-        }
-
-    except Exception as e:
-        return {
-            "status": "failed",
-            "key_found": True,
-            "key_start": api_key[:6],
-            "error": str(e)
-        }
